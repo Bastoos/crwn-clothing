@@ -1,4 +1,9 @@
 import React, { useState } from "react";
+import {
+  createAuthUserWithEmailAndPassword,
+  createUserDocumentFromAuth,
+} from "../../utils/firebase/Firebase";
+import FormInput from "../form-input/FormInput";
 
 const defaultValues = {
   displayName: "",
@@ -17,43 +22,64 @@ const SignUp = () => {
     setFormFields({ ...formFields, [name]: value });
   };
 
-  const handleSubmit = (data) => {};
+  const handleSubmit = async (event, data) => {
+    try {
+      event.preventDefault();
+
+      if (password != confirm_password) {
+        alert("PassWords don't match");
+        return;
+      }
+
+      const res = await createAuthUserWithEmailAndPassword(email, password);
+
+      if (res) {
+        const userDocRef = await createUserDocumentFromAuth({
+          ...res.user,
+          displayName,
+        });
+
+        setFormFields(defaultValues);
+      }
+    } catch (error) {
+      console.error(error);
+      Promise.reject(error);
+    }
+  };
+
   return (
     <div>
       <h1>Sign up with you email and password</h1>
       <form onSubmit={handleSubmit}>
-        <label>Display Name</label>
-        <input
+        <FormInput
+          label={"Display Name"}
           type="text"
           name="displayName"
-          placeholder="Name"
           value={displayName}
           onChange={handleChange}
           required
         />
-        <label>Email</label>
-        <input
+        <FormInput
+          label={"Email"}
           type="email"
           name="email"
-          placeholder="email"
           value={email}
           onChange={handleChange}
           required
         />
-        <label>Password</label>
-        <input
+        <FormInput
+          label={"Password"}
           type="password"
           name="password"
-          placeholder="password"
           value={password}
           onChange={handleChange}
           required
         />
-        <label>Confirm Password</label>
-        <input
+
+        <FormInput
+          label={"Confirm Password"}
           type="password"
           name="confirm_password"
-          placeholder="Confirm Password"
           value={confirm_password}
           onChange={handleChange}
           required
